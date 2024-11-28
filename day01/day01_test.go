@@ -1,4 +1,4 @@
-package day1
+package day01
 
 import (
 	"aoc2024/utils"
@@ -6,18 +6,12 @@ import (
 	"testing"
 )
 
-var input []string
-var err error
-
-func TestMain(m *testing.M) {
-	input, err = utils.ReadInput("day1_example.txt")
+func TestPart1(t *testing.T) {
+	input, err := utils.ReadInput("day01_example1.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
-	m.Run()
-}
 
-func TestPart1(t *testing.T) {
 	expected := 0
 	result := part1(input)
 	if result != expected {
@@ -26,6 +20,11 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
+	input, err := utils.ReadInput("day01_example2.txt")
+	if err != nil {
+		log.Fatalln(utils.Red(err.Error()))
+	}
+
 	expected := 0
 	result := part2(input)
 	if result != expected {

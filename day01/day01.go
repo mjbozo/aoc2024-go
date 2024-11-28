@@ -1,4 +1,4 @@
-package day2
+package day01
 
 import (
 	"aoc2024/utils"
@@ -7,7 +7,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInput("day2/day2_input.txt")
+	input, err := utils.ReadInput("day01/day01_input.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -17,11 +17,9 @@ func Run() {
 }
 
 func part1(lines []string) int {
-	fmt.Println(lines)
 	return 0
 }
 
 func part2(lines []string) int {
-	fmt.Println(lines)
 	return 0
 }

@@ -1,22 +1,46 @@
 package daybreaker
 
 import (
+	"aoc2024/utils"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"strings"
 )
 
+type DaybreakError struct {
+	msg string
+}
+
+func (e *DaybreakError) Error() string {
+	return e.msg
+}
+
 func Create(day string) error {
-	fmt.Printf("Daybreaking %s\n", day)
+	dayNum := strings.TrimPrefix(day, "day")
+	if len(dayNum) == 1 {
+		// then i forgot to prepend day 1-9 with a zero
+		day = fmt.Sprintf("day0%s", dayNum)
+	}
+
+	// validate directory does not already exist
+	info, err := os.Stat(day)
+	if err != nil && errors.Is(err, fs.ErrExist) {
+		return err
+	}
+
+	if info != nil {
+		return &DaybreakError{fmt.Sprintf("%s already exists", day)}
+	}
 
 	// create new directory with argument name from base directory
-	err := os.Mkdir(day, 0750)
+	err = os.Mkdir(day, 0750)
 	if err != nil && !errors.Is(err, fs.ErrExist) {
 		return err
 	}
 
-	// create `dayX.go`, `dayX_test.go`, `dayX_input.go` and `dayX_example.txt` files in new directory
+	// create `dayX.go`, `dayX_test.go`, `dayX_input.go`, `dayX_example1.txt` and `dayX_example2.txt` files in new directory
 	err = os.WriteFile(fmt.Sprintf("%s/%s.go", day, day), []byte(fmt.Sprintf(`package %s
 
 import (
@@ -36,12 +60,10 @@ func Run() {
 }
 
 func part1(lines []string) int {
-	fmt.Println(lines)
 	return 0
 }
 
 func part2(lines []string) int {
-	fmt.Println(lines)
 	return 0
 }`, day, day, day)), 0660)
 
@@ -57,18 +79,12 @@ import (
 	"testing"
 )
 
-var input []string
-var err error
-
-func TestMain(m *testing.M) {
-	input, err = utils.ReadInput("%s_example.txt")
+func TestPart1(t *testing.T) {
+    input, err := utils.ReadInput("%s_example1.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
-	m.Run()
-}
 
-func TestPart1(t *testing.T) {
     expected := 0
 	result := part1(input)
 	if result != expected {
@@ -77,12 +93,17 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
+    input, err := utils.ReadInput("%s_example2.txt")
+	if err != nil {
+		log.Fatalln(utils.Red(err.Error()))
+	}
+
     expected := 0
 	result := part2(input)
 	if result != expected {
 		t.Fatalf(utils.Red("Expected %%d, got %%d\n"), expected, result)
 	}
-}`, day, day)), 0660)
+}`, day, day, day)), 0660)
 	if err != nil {
 		return err
 	}
@@ -92,10 +113,16 @@ func TestPart2(t *testing.T) {
 		return err
 	}
 
-	err = os.WriteFile(fmt.Sprintf("%s/%s_example.txt", day, day), []byte(""), 0660)
+	err = os.WriteFile(fmt.Sprintf("%s/%s_example1.txt", day, day), []byte(""), 0660)
 	if err != nil {
 		return err
 	}
 
+	err = os.WriteFile(fmt.Sprintf("%s/%s_example2.txt", day, day), []byte(""), 0660)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%s\n", utils.Green(fmt.Sprintf("\tSuccessfully created %s files", day)))
 	return nil
 }

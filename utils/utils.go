@@ -7,8 +7,27 @@ import (
 	"strings"
 )
 
+type Pair[T, U any] struct {
+	First  T
+	Second U
+}
+
+func (p Pair[T, U]) String() string {
+	return fmt.Sprintf("(%v, %v)", p.First, p.Second)
+}
+
+type Triple[T, U, V any] struct {
+	First  T
+	Second U
+	Third  V
+}
+
+func (t Triple[T, U, V]) String() string {
+	return fmt.Sprintf("(%v, %v, %v)", t.First, t.Second, t.Third)
+}
+
 func ReadInput(filename string) ([]string, error) {
-	return ReadInputByDelim(filename, "\n")
+	return ReadInputByDelim(filename, "\r\n")
 }
 
 func ReadInputByDelim(filename, delim string) ([]string, error) {
@@ -69,6 +88,10 @@ func Filter[S ~[]E, E any](s S, predicate func(E) bool) S {
 	}
 
 	return filtered
+}
+
+func Green(input string) string {
+	return fmt.Sprintf("\033[32m%s\033[39m", input)
 }
 
 func Red(input string) string {
