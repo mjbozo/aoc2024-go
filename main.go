@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -56,6 +57,12 @@ func main() {
 	}
 
 	day := args[1]
+	dayNum := strings.TrimPrefix(day, "day")
+	if len(dayNum) == 1 {
+		// then i forgot to prepend day 1-9 with a zero
+		day = fmt.Sprintf("day0%s", dayNum)
+	}
+
 	switch day {
 	case "day01":
 		day01.Run()
