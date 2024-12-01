@@ -47,6 +47,7 @@ import (
 	"aoc2024/utils"
 	"fmt"
 	"log"
+	"time"
 )
 
 func Run() {
@@ -55,8 +56,15 @@ func Run() {
 		log.Fatalln(utils.Red(err.Error()))
 	}
 
-	fmt.Printf("Part 1: %%d\n", part1(input))
-	fmt.Printf("Part 2: %%d\n", part2(input))
+	start := time.Now()
+	part1Result := part1(input)
+	elapsed := time.Since(start)
+	fmt.Printf("Part 1: %%d (%%v)\n", part1Result, elapsed)
+
+	start = time.Now()
+	part2Result := part2(input)
+	elapsed = time.Since(start)
+	fmt.Printf("Part 2: %%d (%%v)\n", part2Result, elapsed)
 }
 
 func part1(lines []string) int {

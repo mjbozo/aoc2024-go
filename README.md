@@ -13,3 +13,6 @@ Daybreaker package is used to build files for a new day because its more fun tha
 > `go run main.go -c dayXX`
 
 ## Daily Results
+### Day 1
+Part 1: ⭐ (210.808µs)
+Part 2: ⭐ (165.999µs)
