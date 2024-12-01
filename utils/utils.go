@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"os"
@@ -96,6 +98,12 @@ func ReadInputRaw(filename string) (string, error) {
 
 	input_string := strings.TrimSpace(string(bytes))
 	return input_string, nil
+}
+
+// Transformed input into hexadecimal formatted MD5 hash
+func Md5(input_string string) string {
+	hash := md5.Sum([]byte(input_string))
+	return hex.EncodeToString(hash[:])
 }
 
 // Calculate manhattan distance between two points
