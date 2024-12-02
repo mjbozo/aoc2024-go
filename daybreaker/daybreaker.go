@@ -51,7 +51,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInput("%s/%s_input.txt")
+	input, err := utils.ReadInput("%s/input.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -73,7 +73,7 @@ func part1(lines []string) int {
 
 func part2(lines []string) int {
 	return 0
-}`, day, day, day)), 0660)
+}`, day, day)), 0660)
 
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ import (
 )
 
 func TestPart1(t *testing.T) {
-    input, err := utils.ReadInput("%s_example1.txt")
+    input, err := utils.ReadInput("example.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -101,7 +101,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-    input, err := utils.ReadInput("%s_example2.txt")
+    input, err := utils.ReadInput("example.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -111,22 +111,17 @@ func TestPart2(t *testing.T) {
 	if result != expected {
 		t.Fatalf(utils.Red("Expected %%d, got %%d\n"), expected, result)
 	}
-}`, day, day, day)), 0660)
+}`, day)), 0660)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(fmt.Sprintf("%s/%s_input.txt", day, day), []byte(""), 0660)
+	err = os.WriteFile(fmt.Sprintf("%s/input.txt", day), []byte(""), 0660)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(fmt.Sprintf("%s/%s_example1.txt", day, day), []byte(""), 0660)
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(fmt.Sprintf("%s/%s_example2.txt", day, day), []byte(""), 0660)
+	err = os.WriteFile(fmt.Sprintf("%s/example.txt", day), []byte(""), 0660)
 	if err != nil {
 		return err
 	}

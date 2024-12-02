@@ -11,7 +11,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInput("day02/day02_input.txt")
+	input, err := utils.ReadInput("day02/input.txt")
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -55,17 +55,15 @@ func part2(lines []string) int {
 			return number
 		})
 
-		if isSafe(ints) {
+		reversed := make([]int, len(ints))
+		for i, n := range ints {
+			reversedIndex := len(ints) - 1 - i
+			reversed[reversedIndex] = n
+		}
+
+		// teeeechnically O(n) right??
+		if isSafeEnough(ints) || isSafeEnough(reversed) {
 			safeCount++
-		} else {
-			// just brute force??
-			for removeIndex := 0; removeIndex < len(ints); removeIndex++ {
-				newInts := remove(ints, removeIndex)
-				if isSafe(newInts) {
-					safeCount++
-					break
-				}
-			}
 		}
 	}
 
@@ -91,10 +89,33 @@ func isSafe(nums []int) bool {
 	return true
 }
 
-func remove(s []int, i int) []int {
-	removed := make([]int, 0)
-	removed = append(removed, s[:i]...)
-	removed = append(removed, s[i+1:]...)
-	return removed
-}
+func isSafeEnough(nums []int) bool {
+	var prevDiff int
+	tolerable := true
+	removedLast := false
 
+	for i := 1; i < len(nums); i++ {
+		prevIndex := i - 1
+		if removedLast {
+			prevIndex = i - 2
+		}
+
+		removedLast = false
+		diff := nums[i] - nums[prevIndex]
+		absDiff := utils.Abs(diff)
+
+		if (prevIndex > 0 && diff*prevDiff <= 0) || absDiff > 3 || absDiff == 0 {
+			if !tolerable {
+				return false
+			}
+
+			tolerable = false
+			removedLast = true
+		} else {
+			// ensure prevDiff will not be the removed element next iteration
+			prevDiff = diff
+		}
+	}
+
+	return true
+}

@@ -159,6 +159,11 @@ func Map[S ~[]E, E any, T any](s S, transformer func(E) T) []T {
 	return mapped
 }
 
+// Abs for ints
+func Abs(x int) int {
+	return int(math.Abs(float64(x)))
+}
+
 // Green text colour
 func Green(input string) string {
 	return fmt.Sprintf("\033[32m%s\033[39m", input)
