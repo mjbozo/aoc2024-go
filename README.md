@@ -17,3 +17,9 @@ Daybreaker package is used to build files for a new day because its more fun tha
 Part 1: ⭐ (210.808µs)
 
 Part 2: ⭐ (165.999µs)
+
+
+### Day 2
+Part 1: ⭐ (312.127µs)
+
+Part 2: ⭐ (512.635µs)
