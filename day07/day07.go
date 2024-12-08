@@ -66,6 +66,10 @@ func part2(lines []string) int {
 
 func testCalibration(testValue int, calibrationNums []int) bool {
 	first := calibrationNums[0]
+	if first > testValue {
+		return false
+	}
+
 	second := calibrationNums[1]
 
 	addition := first + second
@@ -90,6 +94,10 @@ func testCalibration(testValue int, calibrationNums []int) bool {
 
 func testCalibrationWithConcat(testValue int, calibrationNums []int) bool {
 	first := calibrationNums[0]
+	if first > testValue {
+		return false
+	}
+
 	second := calibrationNums[1]
 
 	addition := first + second
@@ -113,5 +121,7 @@ func testCalibrationWithConcat(testValue int, calibrationNums []int) bool {
 	concatSlice := []int{concat}
 	concatSlice = append(concatSlice, calibrationNums[2:]...)
 
-	return testCalibrationWithConcat(testValue, addSlice) || testCalibrationWithConcat(testValue, multiplySlice) || testCalibrationWithConcat(testValue, concatSlice)
+	return testCalibrationWithConcat(testValue, addSlice) ||
+		testCalibrationWithConcat(testValue, multiplySlice) ||
+		testCalibrationWithConcat(testValue, concatSlice)
 }

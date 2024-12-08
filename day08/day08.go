@@ -8,7 +8,7 @@ import (
 )
 
 type Pos utils.Pair[int, int]
-type Set utils.HashSet[int]
+type Set = utils.HashSet[Pos]
 
 func Run() {
 	input, err := utils.ReadInput("day08/input.txt")
@@ -31,7 +31,7 @@ func part1(lines []string) int {
 	height := len(lines)
 	width := len(lines[0])
 
-	antinodeLocations := make(utils.HashSet[Pos])
+	antinodeLocations := make(Set)
 	frequencyLocations := make(map[byte][]Pos)
 
 	for y := 0; y < height; y++ {
