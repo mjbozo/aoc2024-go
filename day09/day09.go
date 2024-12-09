@@ -38,26 +38,8 @@ func Run() {
 }
 
 func part1(line string) int {
-	files := make([]File, 0)
-	freeSpace := make([]FreeSpace, 0)
+	files, freeSpace := getFragments(line)
 	isFile := true
-	offset := 0
-
-	for i, c := range line {
-		size, _ := strconv.Atoi(string(c))
-		if isFile {
-			file := File{id: (i + 1) / 2, size: size, start: offset, end: offset + size - 1}
-			files = append(files, file)
-		} else {
-			freeSpot := FreeSpace{start: offset, end: offset + size - 1}
-			freeSpace = append(freeSpace, freeSpot)
-		}
-
-		offset += size
-		isFile = !isFile
-	}
-
-	isFile = true
 	currentFileIndex := 0
 	currentSpaceIndex := 0
 
@@ -96,6 +78,41 @@ func part1(line string) int {
 }
 
 func part2(line string) int {
+	files, freeSpace := getFragments(line)
+	checksum := 0
+
+	for i := len(files) - 1; i >= 0; i-- {
+		file := files[i]
+		for j, space := range freeSpace {
+			if space.start > file.start || file.end < space.start {
+				checksum += (triangleNum(file.end) - triangleNum(file.start-1)) * file.id
+				break
+			}
+
+			if file.size <= space.end-space.start+1 {
+				file.start = space.start
+				file.end = file.start + file.size - 1
+				files[i] = file
+				checksum += (triangleNum(file.end) - triangleNum(file.start-1)) * file.id
+
+				space.start = file.end + 1
+				if space.start > space.end {
+					for k := j; k < len(freeSpace)-1; k++ {
+						freeSpace[k] = freeSpace[k+1]
+					}
+				} else {
+					freeSpace[j] = space
+				}
+
+				break
+			}
+		}
+	}
+
+	return checksum
+}
+
+func getFragments(line string) ([]File, []FreeSpace) {
 	files := make([]File, 0)
 	freeSpace := make([]FreeSpace, 0)
 	isFile := true
@@ -115,40 +132,10 @@ func part2(line string) int {
 		isFile = !isFile
 	}
 
-	for i := len(files) - 1; i >= 0; i-- {
-		file := files[i]
-		for j, space := range freeSpace {
-			if space.start > file.start || file.end < space.start {
-				break
-			}
+	return files, freeSpace
+}
 
-			if file.size <= space.end-space.start+1 {
-				file.start = space.start
-				file.end = file.start + file.size - 1
-				files[i] = file
-
-				space.start = file.end + 1
-				if space.start > space.end {
-					newFreeSpace := make([]FreeSpace, 0)
-					newFreeSpace = append(newFreeSpace, freeSpace[:j]...)
-					newFreeSpace = append(newFreeSpace, freeSpace[j+1:]...)
-					freeSpace = newFreeSpace
-				} else {
-					freeSpace[j] = space
-				}
-
-				break
-			}
-		}
-	}
-
-	checksum := 0
-	for _, file := range files {
-		for i := file.start; i <= file.end; i++ {
-			checksum += file.id * i
-		}
-	}
-
-	return checksum
+func triangleNum(x int) int {
+	return x * (x + 1) / 2
 }
 
