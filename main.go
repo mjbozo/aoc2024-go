@@ -9,8 +9,8 @@ import (
 	"aoc2024/day06"
 	"aoc2024/day07"
 	"aoc2024/day08"
+	"aoc2024/day09"
 	/*
-		"aoc2024/day09"
 		"aoc2024/day10"
 		"aoc2024/day11"
 		"aoc2024/day12"
@@ -80,9 +80,9 @@ func main() {
 		day07.Run()
 	case "day08":
 		day08.Run()
+	case "day09":
+		day09.Run()
 		/*
-			case "day09":
-				day09.Run()
 			case "day10":
 				day10.Run()
 			case "day11":
