@@ -12,8 +12,8 @@ import (
 	"aoc2024/day09"
 	"aoc2024/day10"
 	"aoc2024/day11"
+	"aoc2024/day12"
 	/*
-		"aoc2024/day12"
 		"aoc2024/day13"
 		"aoc2024/day14"
 		"aoc2024/day15"
@@ -86,9 +86,9 @@ func main() {
 		day10.Run()
 	case "day11":
 		day11.Run()
+	case "day12":
+		day12.Run()
 		/*
-			case "day12":
-				day12.Run()
 			case "day13":
 				day13.Run()
 			case "day14":
