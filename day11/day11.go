@@ -26,19 +26,26 @@ func Run() {
 	fmt.Printf("Part 2: %d (%v)\n", part2Result, elapsed)
 }
 
-func part1(line string) int {
+func part1(line string) uint {
 	stonesStr := strings.Split(line, " ")
-	stones := make([]int, 0)
+	stones := make(map[uint]uint, 0)
 	for _, s := range stonesStr {
 		num, _ := strconv.Atoi(s)
-		stones = append(stones, num)
+		stones[uint(num)]++
 	}
+
+	memo := make(map[uint][]uint)
 
 	for range 25 {
-		stones = blink(stones)
+		stones = blink(&stones, &memo)
 	}
 
-	return len(stones)
+	var sum uint = 0
+	for _, val := range stones {
+		sum += val
+	}
+
+	return sum
 }
 
 func part2(line string) uint {
@@ -50,10 +57,8 @@ func part2(line string) uint {
 	}
 
 	memo := make(map[uint][]uint)
-	var numStones uint = 0
-
 	for range 75 {
-		stones = blink2(&stones, &memo, &numStones)
+		stones = blink(&stones, &memo)
 	}
 
 	var sum uint = 0
@@ -64,29 +69,7 @@ func part2(line string) uint {
 	return sum
 }
 
-func blink(stones []int) []int {
-	nextStones := make([]int, 0)
-
-	for _, stone := range stones {
-		stoneStr := fmt.Sprintf("%d", stone)
-		if stone == 0 {
-			nextStones = append(nextStones, 1)
-		} else if len(stoneStr)%2 == 0 {
-			n := len(stoneStr) / 2
-			first, _ := strconv.Atoi(stoneStr[:n])
-			second, _ := strconv.Atoi(stoneStr[n:])
-			nextStones = append(nextStones, first)
-			nextStones = append(nextStones, second)
-		} else {
-			nextStones = append(nextStones, stone*2024)
-		}
-	}
-
-	return nextStones
-}
-
-func blink2(stones *map[uint]uint, memo *map[uint][]uint, numStones *uint) map[uint]uint {
-	// loop through stones map
+func blink(stones *map[uint]uint, memo *map[uint][]uint) map[uint]uint {
 	nextStones := make(map[uint]uint)
 	for key, val := range *stones {
 		nextStones[key] = val
@@ -100,8 +83,6 @@ func blink2(stones *map[uint]uint, memo *map[uint][]uint, numStones *uint) map[u
 		// if num in memo, dw abt compute, otherwise compute
 		if turnsInto, ok := (*memo)[key]; ok {
 			// figure out how many stones it turns into
-			// increase numStones
-			*numStones += uint(len(turnsInto)) * val
 			nextStones[key] -= val
 			for _, nextStone := range turnsInto {
 				nextStones[nextStone] += val

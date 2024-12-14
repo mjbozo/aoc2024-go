@@ -12,7 +12,7 @@ func TestPart1(t *testing.T) {
 		log.Fatalln(utils.Red(err.Error()))
 	}
 
-	expected := 55312
+	var expected uint = 55312
 	result := part1(input)
 	if result != expected {
 		t.Fatalf(utils.Red("Expected %d, got %d\n"), expected, result)
