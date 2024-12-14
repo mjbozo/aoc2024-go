@@ -63,25 +63,26 @@ func part1(lines string) int {
 		prizeLocationY, _ := strconv.Atoi(labels[1][2:])
 		prizePos := Pos{x: prizeLocationX, y: prizeLocationY}
 
-		currentPos := Pos{x: 0, y: 0}
+		xMoveA := float64(aButton.xMove)
+		yMoveA := float64(aButton.yMove)
+		deltaA := yMoveA / xMoveA
 
-		currentTokens := 0
-		gotPrize := false
+		xMoveB := float64(bButton.xMove)
+		yMoveB := float64(bButton.yMove)
+		deltaB := yMoveB / xMoveB
 
-		for currentPos.x < prizePos.x && currentPos.y < prizePos.y {
-			if isOnGradient(prizePos, currentPos, bButton) {
-				currentTokens += (prizePos.x - currentPos.x) / bButton.xMove
-				gotPrize = true
-				break
-			}
+		prizeX := float64(prizePos.x)
+		prizeY := float64(prizePos.y)
 
-			currentPos.x += aButton.xMove
-			currentPos.y += aButton.yMove
-			currentTokens += 3
-		}
+		bInterceptY := prizeY - (prizeX * deltaB)
+		xCross := bInterceptY / (deltaA - deltaB)
 
-		if gotPrize {
-			total += currentTokens
+		aButtonPresses := round(xCross / xMoveA)
+		bButtonPresses := round((prizeX - xCross) / xMoveB)
+
+		if (aButtonPresses*aButton.xMove)+(bButtonPresses*bButton.xMove) == prizePos.x &&
+			(aButtonPresses*aButton.yMove)+(bButtonPresses*bButton.yMove) == prizePos.y {
+			total += aButtonPresses*3 + bButtonPresses
 		}
 	}
 
@@ -138,12 +139,6 @@ func part2(lines string) int {
 	}
 
 	return total
-}
-
-func isOnGradient(prizePos, currentPos Pos, button Button) bool {
-	xDiff := prizePos.x - currentPos.x
-	yDiff := prizePos.y - currentPos.y
-	return xDiff%button.xMove == 0 && yDiff%button.yMove == 0 && (xDiff/button.xMove) == (yDiff/button.yMove)
 }
 
 func round(f float64) int {

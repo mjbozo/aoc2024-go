@@ -176,9 +176,9 @@ func part2(lines []string, w, h int) int {
 					row := ""
 					for x := range w {
 						if _, ok := positions[Pos{x: x, y: y}]; ok {
-							row += "x"
+							row += "█"
 						} else {
-							row += "."
+							row += " "
 						}
 					}
 					fmt.Println(row)
