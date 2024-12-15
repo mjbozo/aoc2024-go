@@ -8,19 +8,18 @@ import (
 	"time"
 )
 
+type Pos struct {
+	x int
+	y int
+}
+
 type Cell struct {
-	x   int
-	y   int
+	pos Pos
 	val byte
 }
 
 func (c Cell) String() string {
 	return string(c.val)
-}
-
-type Pos struct {
-	x int
-	y int
 }
 
 func Run() {
@@ -44,100 +43,29 @@ func part1(input string) int {
 	parts := strings.Split(input, "\n\n")
 	gridLines := strings.Split(parts[0], "\n")
 	movements := parts[1]
-	robot := Pos{x: 0, y: 0}
 
-	grid := make(utils.Grid[Cell], 0)
-	for y, line := range gridLines {
-		row := make([]Cell, 0)
-		for x, c := range line {
-			cell := Cell{x: x, y: y, val: byte(c)}
-			row = append(row, cell)
-
-			if byte(c) == '@' {
-				robot.x = x
-				robot.y = y
-			}
-		}
-		grid = append(grid, row)
-	}
+	grid, robot := buildGrid(gridLines)
 
 	for _, movement := range movements {
 		switch movement {
 		case '^':
-			y := robot.y - 1
-			for grid[y][robot.x].val == byte('O') {
-				y--
-			}
-			if grid[y][robot.x].val == byte('.') {
-				for y < robot.y {
-					grid[y][robot.x].val = grid[y+1][robot.x].val
-					y++
-				}
-				grid[robot.y][robot.x].val = '.'
-				robot.y--
-			}
-
+			moveVertically(&grid, &robot, -1, 1)
 		case 'v':
-			y := robot.y + 1
-			for grid[y][robot.x].val == byte('O') {
-				y++
-			}
-			if grid[y][robot.x].val == byte('.') {
-				for y > robot.y {
-					grid[y][robot.x].val = grid[y-1][robot.x].val
-					y--
-				}
-				grid[robot.y][robot.x].val = '.'
-				robot.y++
-			}
-
+			moveVertically(&grid, &robot, 1, -1)
 		case '<':
-			x := robot.x - 1
-			for grid[robot.y][x].val == byte('O') {
-				x--
-			}
-			if grid[robot.y][x].val == byte('.') {
-				for x < robot.x {
-					grid[robot.y][x].val = grid[robot.y][x+1].val
-					x++
-				}
-				grid[robot.y][robot.x].val = '.'
-				robot.x--
-			}
-
+			moveHorizontally(&grid, &robot, -1, 1)
 		case '>':
-			x := robot.x + 1
-			for grid[robot.y][x].val == byte('O') {
-				x++
-			}
-			if grid[robot.y][x].val == byte('.') {
-				for x > robot.x {
-					grid[robot.y][x].val = grid[robot.y][x-1].val
-					x--
-				}
-				grid[robot.y][robot.x].val = '.'
-				robot.x++
-			}
+			moveHorizontally(&grid, &robot, 1, -1)
 		}
 	}
 
-	total := 0
-	for y, line := range grid {
-		for x, cell := range line {
-			if cell.val == 'O' {
-				total += 100*y + x
-			}
-		}
-	}
-
-	return total
+	return gpsSum(grid, 'O')
 }
 
 func part2(input string) int {
 	parts := strings.Split(input, "\n\n")
 	gridLines := strings.Split(parts[0], "\n")
 	movements := parts[1]
-	robot := Pos{x: 0, y: 0}
 
 	for i, line := range gridLines {
 		line = strings.ReplaceAll(line, "#", "##")
@@ -147,15 +75,33 @@ func part2(input string) int {
 		gridLines[i] = line
 	}
 
-	for _, line := range gridLines {
-		fmt.Println(line)
+	grid, robot := buildGrid(gridLines)
+
+	for _, movement := range movements {
+		switch movement {
+		case '^':
+			moveVerticallyThicc(&grid, &robot, -1, 1)
+		case 'v':
+			moveVerticallyThicc(&grid, &robot, 1, -1)
+		case '<':
+			moveHorizontally(&grid, &robot, -1, 1)
+		case '>':
+			moveHorizontally(&grid, &robot, 1, -1)
+		}
 	}
 
+	//fmt.Println(grid)
+
+	return gpsSum(grid, '[')
+}
+
+func buildGrid(gridLines []string) (utils.Grid[Cell], Pos) {
+	robot := Pos{x: 0, y: 0}
 	grid := make(utils.Grid[Cell], 0)
 	for y, line := range gridLines {
 		row := make([]Cell, 0)
 		for x, c := range line {
-			cell := Cell{x: x, y: y, val: byte(c)}
+			cell := Cell{pos: Pos{x: x, y: y}, val: byte(c)}
 			row = append(row, cell)
 
 			if byte(c) == '@' {
@@ -166,152 +112,92 @@ func part2(input string) int {
 		grid = append(grid, row)
 	}
 
-	//fmt.Println(grid)
+	return grid, robot
+}
 
-	for _, movement := range movements {
-		switch movement {
-		case '^':
-			positionsToMove := make([]Cell, 0)
-			hasWall := false
-			queue := make([]Cell, 0)
-			queue = append(queue, grid[robot.y][robot.x])
+func moveHorizontally(grid *utils.Grid[Cell], robot *Pos, forward, backward int) {
+	x := robot.x + forward
+	for (*grid)[robot.y][x].val != '.' && (*grid)[robot.y][x].val != '#' {
+		x += forward
+	}
+	if (*grid)[robot.y][x].val == '.' {
+		for x != robot.x {
+			(*grid)[robot.y][x].val = (*grid)[robot.y][x+backward].val
+			x += backward
+		}
+		(*grid)[robot.y][robot.x].val = '.'
+		robot.x += forward
+	}
+}
 
-			for len(queue) > 0 {
-				current := queue[0]
-				queue = queue[1:]
+func moveVertically(grid *utils.Grid[Cell], robot *Pos, forward, backward int) {
+	y := robot.y + forward
+	for (*grid)[y][robot.x].val != '.' && (*grid)[y][robot.x].val != '#' {
+		y += forward
+	}
+	if (*grid)[y][robot.x].val == '.' {
+		for y != robot.y {
+			(*grid)[y][robot.x].val = (*grid)[y+backward][robot.x].val
+			y += backward
+		}
+		(*grid)[robot.y][robot.x].val = '.'
+		robot.y += forward
+	}
+}
 
-				alreadyMoving := false
-				for _, pos := range positionsToMove {
-					if pos.x == current.x && pos.y == current.y-1 {
-						alreadyMoving = true
-					}
-				}
+func moveVerticallyThicc(grid *utils.Grid[Cell], robot *Pos, forward, backward int) {
+	positionsToMove := make([]Cell, 0)
+	queue := make([]Cell, 0)
+	queue = append(queue, (*grid)[robot.y][robot.x])
 
-				if !alreadyMoving {
-					positionsToMove = append(positionsToMove, Cell{x: current.x, y: current.y - 1})
-				}
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
 
-				if grid[current.y-1][current.x].val == '#' {
-					// need to stop immediately
-					hasWall = true
-					break
-				}
-
-				if grid[current.y-1][current.x].val == '[' {
-					queue = append(queue, grid[current.y-1][current.x])
-					queue = append(queue, grid[current.y-1][current.x+1])
-				} else if grid[current.y-1][current.x].val == ']' {
-					queue = append(queue, grid[current.y-1][current.x])
-					queue = append(queue, grid[current.y-1][current.x-1])
-				}
-			}
-
-			if hasWall {
-				break
-			}
-
-			// should all be empty spots
-			for i := len(positionsToMove) - 1; i >= 0; i-- {
-				pos := positionsToMove[i]
-				grid[pos.y][pos.x].val = grid[pos.y+1][pos.x].val
-				grid[pos.y+1][pos.x].val = '.'
-			}
-
-			grid[robot.y][robot.x].val = '.'
-			robot.y--
-
-		case 'v':
-			positionsToMove := make([]Cell, 0)
-			hasWall := false
-			queue := make([]Cell, 0)
-			queue = append(queue, grid[robot.y][robot.x])
-
-			for len(queue) > 0 {
-				current := queue[0]
-				queue = queue[1:]
-
-				alreadyMoving := false
-				for _, pos := range positionsToMove {
-					if pos.x == current.x && pos.y == current.y+1 {
-						alreadyMoving = true
-					}
-				}
-
-				if !alreadyMoving {
-					positionsToMove = append(positionsToMove, Cell{x: current.x, y: current.y + 1})
-				}
-
-				if grid[current.y+1][current.x].val == '#' {
-					// need to stop immediately
-					hasWall = true
-					break
-				}
-
-				if grid[current.y+1][current.x].val == '[' {
-					queue = append(queue, grid[current.y+1][current.x])
-					queue = append(queue, grid[current.y+1][current.x+1])
-				} else if grid[current.y+1][current.x].val == ']' {
-					queue = append(queue, grid[current.y+1][current.x])
-					queue = append(queue, grid[current.y+1][current.x-1])
-				}
-			}
-
-			if hasWall {
-				break
-			}
-
-			// should all be empty spots
-			for i := len(positionsToMove) - 1; i >= 0; i-- {
-				pos := positionsToMove[i]
-				grid[pos.y][pos.x].val = grid[pos.y-1][pos.x].val
-				grid[pos.y-1][pos.x].val = '.'
-			}
-
-			grid[robot.y][robot.x].val = '.'
-			robot.y++
-
-		case '<':
-			x := robot.x - 1
-			for grid[robot.y][x].val == ']' || grid[robot.y][x].val == '[' {
-				x--
-			}
-			if grid[robot.y][x].val == byte('.') {
-				for x < robot.x {
-					grid[robot.y][x].val = grid[robot.y][x+1].val
-					x++
-				}
-				grid[robot.y][robot.x].val = '.'
-				robot.x--
-			}
-
-		case '>':
-			x := robot.x + 1
-			for grid[robot.y][x].val == '[' || grid[robot.y][x].val == ']' {
-				x++
-			}
-			if grid[robot.y][x].val == byte('.') {
-				for x > robot.x {
-					grid[robot.y][x].val = grid[robot.y][x-1].val
-					x--
-				}
-				grid[robot.y][robot.x].val = '.'
-				robot.x++
+		alreadyMoving := false
+		for _, cell := range positionsToMove {
+			if cell.pos.x == current.pos.x && cell.pos.y == current.pos.y+forward {
+				alreadyMoving = true
 			}
 		}
 
-		//fmt.Println(string(movement))
-		//fmt.Println(grid)
+		if !alreadyMoving {
+			positionsToMove = append(positionsToMove, Cell{pos: Pos{x: current.pos.x, y: current.pos.y + forward}})
+		}
+
+		if (*grid)[current.pos.y+forward][current.pos.x].val == '#' {
+			// need to stop immeiately
+			return
+		}
+
+		if (*grid)[current.pos.y+forward][current.pos.x].val == '[' {
+			queue = append(queue, (*grid)[current.pos.y+forward][current.pos.x])
+			queue = append(queue, (*grid)[current.pos.y+forward][current.pos.x+1])
+		} else if (*grid)[current.pos.y+forward][current.pos.x].val == ']' {
+			queue = append(queue, (*grid)[current.pos.y+forward][current.pos.x])
+			queue = append(queue, (*grid)[current.pos.y+forward][current.pos.x-1])
+		}
 	}
 
+	// should all be empty spots
+	for i := len(positionsToMove) - 1; i >= 0; i-- {
+		cell := positionsToMove[i]
+		(*grid)[cell.pos.y][cell.pos.x].val = (*grid)[cell.pos.y+backward][cell.pos.x].val
+		(*grid)[cell.pos.y+backward][cell.pos.x].val = '.'
+	}
+
+	(*grid)[robot.y][robot.x].val = '.'
+	robot.y += forward
+}
+
+func gpsSum(grid utils.Grid[Cell], box byte) int {
 	total := 0
 	for y, line := range grid {
 		for x, cell := range line {
-			if cell.val == '[' {
+			if cell.val == box {
 				total += 100*y + x
 			}
 		}
 	}
-
 	return total
 }
-
