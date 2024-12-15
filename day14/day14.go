@@ -52,7 +52,7 @@ func Run() {
 	fmt.Printf("Part 1: %d (%v)\n", part1Result, elapsed)
 
 	start = time.Now()
-	part2Result := part2(input, 101, 103)
+	part2Result := part2Alt(input, 101, 103)
 	elapsed = time.Since(start)
 	fmt.Printf("Part 2: %d (%v)\n", part2Result, elapsed)
 }
@@ -191,3 +191,80 @@ func part2(lines []string, w, h int) int {
 	}
 }
 
+func part2Alt(lines []string, w, h int) int {
+	robots := make([]Robot, 0)
+	for _, line := range lines {
+		parts := strings.Split(line, " ")
+		position := parts[0]
+		velocity := parts[1]
+
+		posElements := strings.Split(position, ",")
+		px, _ := strconv.Atoi(posElements[0][2:])
+		py, _ := strconv.Atoi(posElements[1])
+
+		velElements := strings.Split(velocity, ",")
+		vx, _ := strconv.Atoi(velElements[0][2:])
+		vy, _ := strconv.Atoi(velElements[1])
+
+		robot := Robot{px: px, py: py, vx: vx, vy: vy}
+		robots = append(robots, robot)
+	}
+
+	numBots := len(robots)
+	avgXVariance := 0
+	avgYVariance := 0
+
+	n := 1
+	for {
+		sumX := 0
+		sumY := 0
+
+		positions := make(map[Pos]int)
+		for i := range robots {
+			robots[i].move(w, h)
+			robotPos := Pos{x: robots[i].px, y: robots[i].py}
+			positions[robotPos]++
+
+			sumX += robots[i].px
+			sumY += robots[i].py
+		}
+
+		avgX := sumX / numBots
+		xVarianceSum := 0
+		for _, robot := range robots {
+			val := robot.px - avgX
+			xVarianceSum += (val * val)
+		}
+
+		avgY := sumY / numBots
+		yVarianceSum := 0
+		for _, robot := range robots {
+			val := robot.py - avgY
+			yVarianceSum += (val * val)
+		}
+
+		xVariance := xVarianceSum / numBots
+		yVariance := yVarianceSum / numBots
+
+		threshold := 300 // found by iterative testing
+		if n > 1 && utils.Abs(xVariance-avgXVariance) > threshold && utils.Abs(yVariance-avgYVariance) > threshold {
+			for y := range h {
+				row := ""
+				for x := range w {
+					if _, ok := positions[Pos{x: x, y: y}]; ok {
+						row += "█"
+					} else {
+						row += " "
+					}
+				}
+				fmt.Println(row)
+			}
+			return n
+		} else {
+			avgXVariance = ((avgXVariance * (n - 1)) + xVariance) / n
+			avgYVariance = ((avgYVariance * (n - 1)) + yVariance) / n
+		}
+
+		n++
+	}
+}
