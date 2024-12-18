@@ -59,8 +59,6 @@ func part1(lines []string, w, h, n int) int {
 		grid[y][x].val = '#'
 	}
 
-	//fmt.Println(grid)
-
 	scores := make(map[Pos]int)
 	start := Pos{x: 0, y: 0}
 	queue := make(chan Pos, w*h)
@@ -107,46 +105,66 @@ func part2(lines []string, w, h, n int) string {
 		grid[y][x].val = '#'
 	}
 
-	lastByte := ""
-	for i := n; i < len(lines); i++ {
+	minimum := n
+	maximum := len(lines) - 1
+	mid := (maximum - minimum) / 2
+
+	for minimum <= maximum {
+		mid = ((maximum - minimum) / 2) + minimum
+		if canReachEnd(mid, lines, w, h) {
+			minimum = mid + 1
+		} else {
+			maximum = mid - 1
+		}
+	}
+
+	return lines[mid]
+}
+
+func canReachEnd(mid int, lines []string, w, h int) bool {
+	grid := make(utils.Grid[Cell], 0)
+	for y := range h {
+		row := make([]Cell, 0)
+		for x := range w {
+			row = append(row, Cell{x: x, y: y, val: '.'})
+		}
+		grid = append(grid, row)
+	}
+	for i := range mid {
 		b := lines[i]
-		lastByte = b
 		coords := strings.Split(b, ",")
 		x, _ := strconv.Atoi(coords[0])
 		y, _ := strconv.Atoi(coords[1])
 		grid[y][x].val = '#'
+	}
 
-		scores := make(map[Pos]int)
-		start := Pos{x: 0, y: 0}
-		queue := make(chan Pos, w*h)
-		queue <- start
+	scores := make(map[Pos]int)
+	start := Pos{x: 0, y: 0}
+	queue := make(chan Pos, w*h)
+	queue <- start
 
-		for len(queue) > 0 {
-			current := <-queue
-			currentScore := scores[current]
+	for len(queue) > 0 {
+		current := <-queue
+		currentScore := scores[current]
 
-			neighbours := getNeighbours(&grid, &current)
-			for _, neighbour := range neighbours {
-				neighbourPos := Pos{x: neighbour.x, y: neighbour.y}
-				if neighbourScore, ok := scores[neighbourPos]; ok {
-					if neighbourScore > currentScore+1 {
-						scores[neighbourPos] = currentScore + 1
-						queue <- neighbourPos
-					}
-				} else {
+		neighbours := getNeighbours(&grid, &current)
+		for _, neighbour := range neighbours {
+			neighbourPos := Pos{x: neighbour.x, y: neighbour.y}
+			if neighbourScore, ok := scores[neighbourPos]; ok {
+				if neighbourScore > currentScore+1 {
 					scores[neighbourPos] = currentScore + 1
 					queue <- neighbourPos
 				}
+			} else {
+				scores[neighbourPos] = currentScore + 1
+				queue <- neighbourPos
 			}
-		}
-
-		endPos := Pos{x: w - 1, y: h - 1}
-		if _, ok := scores[endPos]; !ok {
-			break
 		}
 	}
 
-	return lastByte
+	endPos := Pos{x: w - 1, y: h - 1}
+	_, ok := scores[endPos]
+	return ok
 }
 
 func getNeighbours(grid *utils.Grid[Cell], current *Pos) []Cell {
