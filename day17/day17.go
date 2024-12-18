@@ -88,29 +88,21 @@ func part2(input string) int {
 
 	for s, instruction := range instructions {
 		n, _ := strconv.Atoi(instruction)
+		B := n ^ 4
 
 		if len(optionsA) == 0 {
-			newB := n ^ 4
-			for c := range 8 {
-				prevB := newB ^ c
-				lowerA := prevB ^ 7
-
-				bitset, validToAdd := createBitset(lowerA, prevB, c)
-
+			for C := range 8 {
+				bitset, validToAdd := createBitset(B, C)
 				if validToAdd {
 					optionsA = append(optionsA, bitset)
 				}
 			}
 		} else {
-			newB := n ^ 4
 			nextOptionsA := make([]BitSet, 0)
 
 			for _, existingBitSet := range optionsA {
-				for c := range 8 {
-					prevB := newB ^ c
-					lowerA := prevB ^ 7
-
-					bitsetToMerge, validToAdd := createBitset(lowerA, prevB, c)
+				for C := range 8 {
+					bitsetToMerge, validToAdd := createBitset(B, C)
 					if !validToAdd {
 						continue
 					}
@@ -135,7 +127,6 @@ func part2(input string) int {
 
 			optionsA = nextOptionsA
 		}
-
 	}
 
 	minimum := optionsA[0].value()
@@ -161,7 +152,9 @@ func evaluate(instructions []string, A, B, C int) string {
 	return output[:len(output)-1]
 }
 
-func createBitset(lowerA, prevB, c int) (BitSet, bool) {
+func createBitset(B, C int) (BitSet, bool) {
+	prevB := B ^ C
+	lowerA := prevB ^ 7
 	var bitset BitSet
 	for i := range 3 {
 		bitset[i] = intToBit(lowerA & 1)
@@ -171,12 +164,12 @@ func createBitset(lowerA, prevB, c int) (BitSet, bool) {
 	validToAdd := true
 	for i := prevB; i < prevB+3; i++ {
 		if bitset[i] == X {
-			bitset[i] = intToBit(c & 1)
-		} else if bitsetValue(bitset[i]) != c&1 {
+			bitset[i] = intToBit(C & 1)
+		} else if bitsetValue(bitset[i]) != C&1 {
 			validToAdd = false
 			break
 		}
-		c = c >> 1
+		C = C >> 1
 	}
 
 	return bitset, validToAdd
