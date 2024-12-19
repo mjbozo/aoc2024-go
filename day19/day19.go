@@ -30,12 +30,20 @@ func part1(input string) int {
 	available := strings.Split(parts[0], ", ")
 	desired := strings.Split(parts[1], "\n")
 
-	memo := make(map[string]bool)
-
 	possibleTowels := 0
+	c := make(chan bool, len(desired))
+
 	for _, pattern := range desired {
-		if canMakeTowel(pattern, available, &memo) {
-			possibleTowels++
+		go canMakeTowelEntry(pattern, available, c)
+	}
+
+	for i := 0; i < len(desired); {
+		select {
+		case x := <-c:
+			if x {
+				possibleTowels++
+			}
+			i++
 		}
 	}
 
@@ -47,14 +55,28 @@ func part2(input string) int {
 	available := strings.Split(parts[0], ", ")
 	desired := strings.Split(parts[1], "\n")
 
-	memo := make(map[string]int)
-
 	towelWays := 0
+	c := make(chan int, len(desired))
+
 	for _, pattern := range desired {
-		towelWays += waysToMakeTowel(pattern, available, &memo)
+		go waysToMakeTowelEntry(pattern, available, c)
+	}
+
+	for i := 0; i < len(desired); {
+		select {
+		case x := <-c:
+			towelWays += x
+			i++
+		}
 	}
 
 	return towelWays
+}
+
+func canMakeTowelEntry(towelDesign string, available []string, c chan bool) {
+	memo := make(map[string]bool)
+	result := canMakeTowel(towelDesign, available, &memo)
+	c <- result
 }
 
 func canMakeTowel(towelDesign string, available []string, memo *map[string]bool) bool {
@@ -78,6 +100,12 @@ func canMakeTowel(towelDesign string, available []string, memo *map[string]bool)
 
 	(*memo)[towelDesign] = false
 	return false
+}
+
+func waysToMakeTowelEntry(towelDesign string, available []string, c chan int) {
+	memo := make(map[string]int)
+	result := waysToMakeTowel(towelDesign, available, &memo)
+	c <- result
 }
 
 func waysToMakeTowel(towelDesign string, available []string, memo *map[string]int) int {
