@@ -29,17 +29,26 @@ func Run() {
 func part1(lines []string) int {
 	sum := 0
 
+	c := make(chan int, len(lines))
 	for _, line := range lines {
-		parts := strings.Split(line, ": ")
-		testValue, _ := strconv.Atoi(parts[0])
-		calibrationNums := utils.Map(strings.Split(parts[1], " "), func(s string) int {
-			num, _ := strconv.Atoi(s)
-			return num
-		})
+		go func(line string) {
+			parts := strings.Split(line, ": ")
+			testValue, _ := strconv.Atoi(parts[0])
+			calibrationNums := utils.Map(strings.Split(parts[1], " "), func(s string) int {
+				num, _ := strconv.Atoi(s)
+				return num
+			})
 
-		if testCalibration(testValue, calibrationNums) {
-			sum += testValue
-		}
+			if testCalibration(testValue, calibrationNums) {
+				c <- testValue
+			} else {
+				c <- 0
+			}
+		}(line)
+	}
+
+	for range len(lines) {
+		sum += <-c
 	}
 
 	return sum
@@ -48,17 +57,26 @@ func part1(lines []string) int {
 func part2(lines []string) int {
 	sum := 0
 
+	c := make(chan int, len(lines))
 	for _, line := range lines {
-		parts := strings.Split(line, ": ")
-		testValue, _ := strconv.Atoi(parts[0])
-		calibrationNums := utils.Map(strings.Split(parts[1], " "), func(s string) int {
-			num, _ := strconv.Atoi(s)
-			return num
-		})
+		go func(line string) {
+			parts := strings.Split(line, ": ")
+			testValue, _ := strconv.Atoi(parts[0])
+			calibrationNums := utils.Map(strings.Split(parts[1], " "), func(s string) int {
+				num, _ := strconv.Atoi(s)
+				return num
+			})
 
-		if testCalibrationWithConcat(testValue, calibrationNums) {
-			sum += testValue
-		}
+			if testCalibrationWithConcat(testValue, calibrationNums) {
+				c <- testValue
+			} else {
+				c <- 0
+			}
+		}(line)
+	}
+
+	for range len(lines) {
+		sum += <-c
 	}
 
 	return sum
