@@ -101,7 +101,6 @@ func ReadInput(filename string, day int) ([]string, error) {
 	bytes, err := os.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Println("attempting fetch")
 			input, err := RequestProblemData(day)
 			if err != nil {
 				return nil, err
@@ -137,7 +136,7 @@ func ReadInputByDelim(filename, delim string) ([]string, error) {
 func ReadInputRaw(filename string, day int) (string, error) {
 	bytes, err := os.ReadFile(filename)
 	if err != nil {
-		if err == os.ErrNotExist {
+		if os.IsNotExist(err) {
 			lines, err := RequestProblemData(day)
 			if err != nil {
 				return "", err
