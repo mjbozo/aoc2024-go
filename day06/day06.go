@@ -45,14 +45,22 @@ func part2(lines []string) int {
 	guardLocations := buildGuardPath(&grid, &guardPos)
 	guardLocations.Remove(startPos)
 
-	numLoops := 0
+	c := make(chan int, len(guardLocations))
 	for location := range guardLocations {
-		grid[location.Second][location.First].isObstacle = true
-		numLoops += pathLoops(grid, startPos)
-		grid[location.Second][location.First].isObstacle = false
+		go func(grid utils.Grid[GridCell], loc, start Position, c chan int) {
+			c <- pathLoops(grid, start, loc.First, loc.Second)
+		}(grid, location, startPos, c)
 	}
 
-	return numLoops
+	numLoopsConcurrent := 0
+	for range len(guardLocations) {
+		select {
+		case x := <-c:
+			numLoopsConcurrent += x
+		}
+	}
+
+	return numLoopsConcurrent
 }
 
 // Convert text input to 2D array of GridCells, and cell where guard starts
@@ -124,22 +132,22 @@ func buildGuardPath(grid *utils.Grid[GridCell], guardPos *Orientation) utils.Has
 }
 
 // Checks if grid cell directly in front of guard is an obstacle
-func isFacingObstacle(grid *utils.Grid[GridCell], width, height int, pos *Orientation) bool {
+func isFacingObstacle(grid *utils.Grid[GridCell], width, height, x, y int, pos *Orientation) bool {
 	switch pos.Third {
 	case '^':
-		if pos.Second > 0 && (*grid)[pos.Second-1][pos.First].isObstacle {
+		if pos.Second > 0 && ((*grid)[pos.Second-1][pos.First].isObstacle || (x == pos.First && y == pos.Second-1)) {
 			return true
 		}
 	case '>':
-		if pos.First < width-1 && (*grid)[pos.Second][pos.First+1].isObstacle {
+		if pos.First < width-1 && ((*grid)[pos.Second][pos.First+1].isObstacle || (x == pos.First+1 && y == pos.Second)) {
 			return true
 		}
 	case 'v':
-		if pos.Second < height-1 && (*grid)[pos.Second+1][pos.First].isObstacle {
+		if pos.Second < height-1 && ((*grid)[pos.Second+1][pos.First].isObstacle || (x == pos.First && y == pos.Second+1)) {
 			return true
 		}
 	case '<':
-		if pos.First > 0 && (*grid)[pos.Second][pos.First-1].isObstacle {
+		if pos.First > 0 && ((*grid)[pos.Second][pos.First-1].isObstacle || (x == pos.First-1 && y == pos.Second)) {
 			return true
 		}
 	}
@@ -148,27 +156,27 @@ func isFacingObstacle(grid *utils.Grid[GridCell], width, height int, pos *Orient
 }
 
 // Rotate guard position in the map
-func rotate(grid *utils.Grid[GridCell], width, height int, pos *Orientation, prevLocations *utils.HashSet[Orientation]) bool {
-	for isFacingObstacle(grid, width, height, pos) {
+func rotate(grid *utils.Grid[GridCell], width, height, x, y int, pos *Orientation, prevLocations *utils.HashSet[Orientation]) bool {
+	for isFacingObstacle(grid, width, height, x, y, pos) {
 		if !(*prevLocations).Insert(*pos) {
 			return true
 		}
 
 		switch pos.Third {
 		case '^':
-			if pos.Second > 0 && (*grid)[pos.Second-1][pos.First].isObstacle {
+			if pos.Second > 0 && ((*grid)[pos.Second-1][pos.First].isObstacle || (x == pos.First && y == pos.Second-1)) {
 				pos.Third = '>'
 			}
 		case '>':
-			if pos.First < width-1 && (*grid)[pos.Second][pos.First+1].isObstacle {
+			if pos.First < width-1 && ((*grid)[pos.Second][pos.First+1].isObstacle || (x == pos.First+1 && y == pos.Second)) {
 				pos.Third = 'v'
 			}
 		case 'v':
-			if pos.Second < height-1 && (*grid)[pos.Second+1][pos.First].isObstacle {
+			if pos.Second < height-1 && ((*grid)[pos.Second+1][pos.First].isObstacle || (x == pos.First && y == pos.Second+1)) {
 				pos.Third = '<'
 			}
 		case '<':
-			if pos.First > 0 && (*grid)[pos.Second][pos.First-1].isObstacle {
+			if pos.First > 0 && ((*grid)[pos.Second][pos.First-1].isObstacle || (x == pos.First-1 && y == pos.Second)) {
 				pos.Third = '^'
 			}
 		}
@@ -179,7 +187,7 @@ func rotate(grid *utils.Grid[GridCell], width, height int, pos *Orientation, pre
 }
 
 // Checks if given map grid results in a looping path
-func pathLoops(grid utils.Grid[GridCell], startPos Position) int {
+func pathLoops(grid utils.Grid[GridCell], startPos Position, newObstacleX, newObstacleY int) int {
 	prevLocations := make(utils.HashSet[Orientation])
 	guardPos := Orientation{First: startPos.First, Second: startPos.Second, Third: '^'}
 
@@ -187,7 +195,7 @@ func pathLoops(grid utils.Grid[GridCell], startPos Position) int {
 	height := len(grid)
 
 	for guardPos.First >= 0 && guardPos.First < width && guardPos.Second >= 0 && guardPos.Second < height {
-		loopFound := rotate(&grid, width, height, &guardPos, &prevLocations)
+		loopFound := rotate(&grid, width, height, newObstacleX, newObstacleY, &guardPos, &prevLocations)
 		if loopFound {
 			return 1
 		}
