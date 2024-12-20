@@ -58,7 +58,6 @@ func part2(lines string) int {
 	pages := parts[1]
 
 	ruleMap := buildOrderingMap(rules)
-	fmt.Println(ruleMap)
 	badLines := make([]string, 0)
 
 	for _, line := range strings.Split(pages, "\n") {

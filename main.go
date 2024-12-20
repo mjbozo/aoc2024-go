@@ -57,6 +57,12 @@ func main() {
 	}
 
 	day := args[1]
+
+	if day == "all" {
+		runAll()
+		return
+	}
+
 	dayNum := strings.TrimPrefix(day, "day")
 	if len(dayNum) == 1 {
 		// then i forgot to prepend day 1-9 with a zero
@@ -119,4 +125,59 @@ func main() {
 	default:
 		fmt.Printf("%s not completed yet\n", day)
 	}
+}
+
+func runAll() {
+	fmt.Println("DAY 01")
+	day01.Run()
+	fmt.Println("\nDAY 02")
+	day02.Run()
+	fmt.Println("\nDAY 03")
+	day03.Run()
+	fmt.Println("\nDAY 04")
+	day04.Run()
+	fmt.Println("\nDAY 05")
+	day05.Run()
+	fmt.Println("\nDAY 06")
+	day06.Run()
+	fmt.Println("\nDAY 07")
+	day07.Run()
+	fmt.Println("\nDAY 08")
+	day08.Run()
+	fmt.Println("\nDAY 09")
+	day09.Run()
+	fmt.Println("\nDAY 10")
+	day10.Run()
+	fmt.Println("\nDAY 11")
+	day11.Run()
+	fmt.Println("\nDAY 12")
+	day12.Run()
+	fmt.Println("\nDAY 13")
+	day13.Run()
+	fmt.Println("\nDAY 14")
+	day14.Run()
+	fmt.Println("\nDAY 15")
+	day15.Run()
+	fmt.Println("\nDAY 16")
+	day16.Run()
+	fmt.Println("\nDAY 17")
+	day17.Run()
+	fmt.Println("\nDAY 18")
+	day18.Run()
+	fmt.Println("\nDAY 19")
+	day19.Run()
+	/*
+	   fmt.Println("\nDAY 20")
+	   day20.Run()
+	   fmt.Println("\nDAY 21")
+	   day21.Run()
+	   fmt.Println("\nDAY 22")
+	   day22.Run()
+	   fmt.Println("\nDAY 23")
+	   day23.Run()
+	   fmt.Println("\nDAY 24")
+	   day24.Run()
+	   fmt.Println("\nDAY 25")
+	   day25.Run()
+	*/
 }
