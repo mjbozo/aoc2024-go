@@ -41,7 +41,7 @@ func (r *Robot) move(w, h int) {
 }
 
 func Run() {
-	input, err := utils.ReadInput("day14/input.txt")
+	input, err := utils.ReadInput("day14/input.txt", 14)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

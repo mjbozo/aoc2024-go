@@ -9,7 +9,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInputRaw("day19/input.txt")
+	input, err := utils.ReadInputRaw("day19/input.txt", 19)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

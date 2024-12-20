@@ -51,7 +51,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInput("%s/input.txt")
+	input, err := utils.ReadInput("%s/input.txt", %s)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -73,7 +73,7 @@ func part1(lines []string) int {
 
 func part2(lines []string) int {
 	return 0
-}`, day, day)), 0660)
+}`, day, day, dayNum)), 0660)
 
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ import (
 )
 
 func TestPart1(t *testing.T) {
-    input, err := utils.ReadInput("example.txt")
+    input, err := utils.ReadInput("example.txt", %s)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -101,7 +101,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-    input, err := utils.ReadInput("example.txt")
+    input, err := utils.ReadInput("example.txt", %s)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -111,7 +111,7 @@ func TestPart2(t *testing.T) {
 	if result != expected {
 		t.Fatalf(utils.Red("Expected %%d, got %%d\n"), expected, result)
 	}
-}`, day)), 0660)
+}`, day, dayNum, dayNum)), 0660)
 	if err != nil {
 		return err
 	}

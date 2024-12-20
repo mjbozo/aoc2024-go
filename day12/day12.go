@@ -27,7 +27,7 @@ type Fence struct {
 }
 
 func Run() {
-	input, err := utils.ReadInput("day12/input.txt")
+	input, err := utils.ReadInput("day12/input.txt", 12)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

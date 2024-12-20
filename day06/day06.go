@@ -11,7 +11,7 @@ type Position utils.Pair[int, int]
 type Orientation utils.Triple[int, int, byte]
 
 func Run() {
-	input, err := utils.ReadInput("day06/input.txt")
+	input, err := utils.ReadInput("day06/input.txt", 6)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

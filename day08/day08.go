@@ -11,7 +11,7 @@ type Pos utils.Pair[int, int]
 type Set = utils.HashSet[Pos]
 
 func Run() {
-	input, err := utils.ReadInput("day08/input.txt")
+	input, err := utils.ReadInput("day08/input.txt", 8)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

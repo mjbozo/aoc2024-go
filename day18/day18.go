@@ -25,7 +25,7 @@ func (c Cell) String() string {
 }
 
 func Run() {
-	input, err := utils.ReadInput("day18/input.txt")
+	input, err := utils.ReadInput("day18/input.txt", 18)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -188,4 +188,3 @@ func getNeighbours(grid *utils.Grid[Cell], current *Pos) []Cell {
 
 	return neighbours
 }
-

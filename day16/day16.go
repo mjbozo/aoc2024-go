@@ -33,7 +33,7 @@ type ScoredState struct {
 }
 
 func Run() {
-	input, err := utils.ReadInput("day16/input.txt")
+	input, err := utils.ReadInput("day16/input.txt", 16)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

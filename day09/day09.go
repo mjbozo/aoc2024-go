@@ -21,7 +21,7 @@ type FreeSpace struct {
 }
 
 func Run() {
-	input, err := utils.ReadInputRaw("day09/input.txt")
+	input, err := utils.ReadInputRaw("day09/input.txt", 9)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -138,4 +138,3 @@ func getFragments(line string) ([]File, []FreeSpace) {
 func triangleNum(x int) int {
 	return x * (x + 1) / 2
 }
-

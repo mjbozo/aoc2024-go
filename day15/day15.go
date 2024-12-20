@@ -23,7 +23,7 @@ func (c Cell) String() string {
 }
 
 func Run() {
-	input, err := utils.ReadInputRaw("day15/input.txt")
+	input, err := utils.ReadInputRaw("day15/input.txt", 15)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

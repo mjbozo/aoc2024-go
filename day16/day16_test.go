@@ -7,7 +7,7 @@ import (
 )
 
 func TestPart1(t *testing.T) {
-	input, err := utils.ReadInput("example.txt")
+	input, err := utils.ReadInput("example.txt", 16)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -20,7 +20,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-	input, err := utils.ReadInput("example.txt")
+	input, err := utils.ReadInput("example.txt", 16)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

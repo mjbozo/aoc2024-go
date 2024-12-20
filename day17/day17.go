@@ -51,7 +51,7 @@ func (bs BitSet) String() string {
 }
 
 func Run() {
-	input, err := utils.ReadInputRaw("day17/input.txt")
+	input, err := utils.ReadInputRaw("day17/input.txt", 17)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

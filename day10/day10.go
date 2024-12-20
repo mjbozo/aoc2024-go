@@ -15,7 +15,7 @@ type Cell struct {
 }
 
 func Run() {
-	input, err := utils.ReadInput("day10/input.txt")
+	input, err := utils.ReadInput("day10/input.txt", 10)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

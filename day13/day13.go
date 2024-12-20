@@ -21,7 +21,7 @@ type Pos struct {
 }
 
 func Run() {
-	input, err := utils.ReadInputRaw("day13/input.txt")
+	input, err := utils.ReadInputRaw("day13/input.txt", 13)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

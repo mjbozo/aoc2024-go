@@ -10,7 +10,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInput("day03/input.txt")
+	input, err := utils.ReadInput("day03/input.txt", 3)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}
@@ -81,4 +81,3 @@ func part2(lines []string) int {
 
 	return sum
 }
-

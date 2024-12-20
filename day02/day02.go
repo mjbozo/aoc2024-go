@@ -11,7 +11,7 @@ import (
 )
 
 func Run() {
-	input, err := utils.ReadInput("day02/input.txt")
+	input, err := utils.ReadInput("day02/input.txt", 2)
 	if err != nil {
 		log.Fatalln(utils.Red(err.Error()))
 	}

@@ -4,7 +4,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"math"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -62,11 +64,53 @@ func IntRange(f, s int) intRange {
 	return intRange{First: lower, Second: upper}
 }
 
+// Send request to AOC to retrieve input data
+func RequestProblemData(day int) (string, error) {
+	tokenBytes, err := os.ReadFile(".token")
+	if err != nil {
+		return "", err
+	}
+
+	client := &http.Client{}
+	url := fmt.Sprintf("https://adventofcode.com/2024/day/%d/input", day)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Cookie", strings.TrimSpace(string(tokenBytes)))
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	bytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	input_string := strings.TrimSpace(string(bytes))
+	input_string_normalised := strings.ReplaceAll(input_string, "\r\n", "\n")
+
+	return input_string_normalised, nil
+}
+
 // Read input from specified filename, separated by newlines
-func ReadInput(filename string) ([]string, error) {
+func ReadInput(filename string, day int) ([]string, error) {
 	bytes, err := os.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			fmt.Println("attempting fetch")
+			input, err := RequestProblemData(day)
+			if err != nil {
+				return nil, err
+			}
+			lines := strings.Split(input, "\n")
+			return lines, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	input_string := strings.TrimSpace(string(bytes))
@@ -90,9 +134,16 @@ func ReadInputByDelim(filename, delim string) ([]string, error) {
 }
 
 // Read input from specified filename, unseparated
-func ReadInputRaw(filename string) (string, error) {
+func ReadInputRaw(filename string, day int) (string, error) {
 	bytes, err := os.ReadFile(filename)
 	if err != nil {
+		if err == os.ErrNotExist {
+			lines, err := RequestProblemData(day)
+			if err != nil {
+				return "", err
+			}
+			return lines, nil
+		}
 		return "", err
 	}
 
