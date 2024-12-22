@@ -21,8 +21,8 @@ import (
 	"aoc2024/day18"
 	"aoc2024/day19"
 	"aoc2024/day20"
+	"aoc2024/day21"
 	/*
-		"aoc2024/day21"
 		"aoc2024/day22"
 		"aoc2024/day23"
 		"aoc2024/day24"
@@ -110,17 +110,17 @@ func main() {
 		day19.Run()
 	case "day20":
 		day20.Run()
+	case "day21":
+		day21.Run()
 		/*
-			case "day21":
-				day21.Run()
-			case "day22":
-				day22.Run()
-			case "day23":
-				day23.Run()
-			case "day24":
-				day24.Run()
-			case "day25":
-				day25.Run()
+		   case "day22":
+		       day22.Run()
+		   case "day23":
+		       day23.Run()
+		   case "day24":
+		       day24.Run()
+		   case "day25":
+		       day25.Run()
 		*/
 	default:
 		fmt.Printf("%s not completed yet\n", day)
@@ -166,11 +166,11 @@ func runAll() {
 	day18.Run()
 	fmt.Println("\nDAY 19")
 	day19.Run()
+	fmt.Println("\nDAY 20")
+	day20.Run()
+	fmt.Println("\nDAY 21")
+	day21.Run()
 	/*
-	   fmt.Println("\nDAY 20")
-	   day20.Run()
-	   fmt.Println("\nDAY 21")
-	   day21.Run()
 	   fmt.Println("\nDAY 22")
 	   day22.Run()
 	   fmt.Println("\nDAY 23")
