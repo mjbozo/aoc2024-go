@@ -175,8 +175,7 @@ func part1(lines []string) int {
 			coord := getCoord(c)
 			for len(numPadQueue) > 0 {
 				current := <-numPadQueue
-				fmt.Println("1")
-				neighbours := getNumPadNeighbourStates(numericKeypad, current, doorRobot)
+				neighbours := getNumPadNeighbourStates(numericKeypad, current, doorRobot, coord)
 
 				for _, neighbour := range neighbours {
 					if oldMoves, ok := moves[neighbour.state]; ok {
@@ -217,32 +216,56 @@ func part1(lines []string) int {
 		pos:        A_DIR,
 		controller: &dirRobot1,
 	}
+	doorRobot := Robot{
+		name:       "DoorRobot",
+		keypad:     numericKeypad,
+		pos:        A_NUM,
+		controller: &dirRobot2,
+	}
+	fmt.Println(doorRobot)
 	//currentState := DirPadState{keypad1: Pos{x: 0, y: 1}}
-	ways := make(utils.HashSet[string])
 	currentState := State{keypad1: A_DIR, keypad2: A_DIR}
-	result := getControllerMoveset2(UP, currentState, &dirRobot2)
-	for _, r := range result {
-		newState := State{keypad1: r.dirPadState.keypad1, keypad2: r.dirPadState.keypad2}
-		backToA := getControllerMoveset2(A_DIR, newState, &dirRobot2)
-		for _, a := range backToA {
-			ways.Insert(r.moveSet + a.moveSet + "A")
-		}
-	}
+	upResult := getControllerMoveset2(UP, currentState, &dirRobot2)
+	upState := currentState
+	upState.keypad1 = upResult[0].dirPadState.keypad1
+	upState.keypad2 = upResult[0].dirPadState.keypad2
+	fmt.Println("UP RESULT")
+	fmt.Println(upResult)
 
-	for way := range ways {
-		fmt.Println(way)
-	}
+	leftState := currentState
+	leftResult := getControllerMoveset2(LEFT, currentState, &dirRobot2)
+	leftState.keypad1 = leftResult[0].dirPadState.keypad1
+	leftState.keypad2 = leftResult[0].dirPadState.keypad2
+	fmt.Println("LEFT RESULT")
+	fmt.Println(leftResult)
+
+	/*
+		for _, r := range result {
+			//newState := State{keypad1: r.dirPadState.keypad1, keypad2: r.dirPadState.keypad2}
+			backToA := getControllerMoveset1(A_DIR, r.dirPadState, &dirRobot1)
+			ways.Insert(r.moveSet + backToA + "A")
+		}
+	*/
+
+	upLeftResult := getControllerMoveset2(LEFT, upState, &dirRobot2)
+	leftUpResult := getControllerMoveset2(UP, leftState, &dirRobot2)
+
+	upLeft := upResult[0].moveSet + upLeftResult[0].moveSet
+	fmt.Println(upLeft)
+
+	leftUp := leftResult[0].moveSet + leftUpResult[0].moveSet
+	fmt.Println(leftUp)
 
 	return total
 	// 160800 too high
 	// 125767 too low
 }
 
-func getNumPadNeighbourStates(numPad Keypad, current State, numPadRobot Robot) []ScoredState {
+func getNumPadNeighbourStates(numPad Keypad, current State, numPadRobot Robot, desiredPos Pos) []ScoredState {
 	neighbours := make([]ScoredState, 0)
 
 	// UP
-	if current.numPadPos.y > 0 {
+	if current.numPadPos.y > 0 && current.numPadPos.y > desiredPos.y {
 		upMoves := getControllerMoveset2(UP, current, numPadRobot.controller)
 		for _, move := range upMoves {
 			nextPos := Pos{x: current.numPadPos.x, y: current.numPadPos.y - 1}
@@ -253,7 +276,8 @@ func getNumPadNeighbourStates(numPad Keypad, current State, numPadRobot Robot) [
 	}
 
 	// DOWN
-	if current.numPadPos.y < len(numPad)-1 && numPad[current.numPadPos.y+1][current.numPadPos.x] != -1 {
+	if current.numPadPos.y < len(numPad)-1 && numPad[current.numPadPos.y+1][current.numPadPos.x] != -1 &&
+		current.numPadPos.y < desiredPos.y {
 		downMoves := getControllerMoveset2(UP, current, numPadRobot.controller)
 		for _, move := range downMoves {
 			nextPos := Pos{x: current.numPadPos.x, y: current.numPadPos.y + 1}
@@ -265,7 +289,8 @@ func getNumPadNeighbourStates(numPad Keypad, current State, numPadRobot Robot) [
 	}
 
 	// LEFT
-	if current.numPadPos.x > 0 && numPad[current.numPadPos.y][current.numPadPos.x-1] != -1 {
+	if current.numPadPos.x > 0 && numPad[current.numPadPos.y][current.numPadPos.x-1] != -1 &&
+		current.numPadPos.x > desiredPos.x {
 		leftMoves := getControllerMoveset2(UP, current, numPadRobot.controller)
 		for _, move := range leftMoves {
 			nextPos := Pos{x: current.numPadPos.x - 1, y: current.numPadPos.y}
@@ -276,7 +301,7 @@ func getNumPadNeighbourStates(numPad Keypad, current State, numPadRobot Robot) [
 	}
 
 	// RIGHT
-	if current.numPadPos.x < len(numPad[0])-1 {
+	if current.numPadPos.x < len(numPad[0])-1 && current.numPadPos.x < desiredPos.x {
 		rightMoves := getControllerMoveset2(UP, current, numPadRobot.controller)
 		for _, move := range rightMoves {
 			nextPos := Pos{x: current.numPadPos.x + 1, y: current.numPadPos.y}
@@ -314,7 +339,7 @@ func getControllerMoveset2(desiredPosition Pos, current State, robot *Robot) []S
 	for len(queue) > 0 {
 		currentDpad := <-queue
 
-		neighbours := getDpadNeighbours(robot, currentDpad)
+		neighbours := getDpadNeighbours(robot, currentDpad, desiredPosition)
 		for _, neighbour := range neighbours {
 			if oldMoves, ok := moves[neighbour.dirPadState]; ok {
 				if len(neighbour.moveSet) < len(oldMoves) {
@@ -332,17 +357,21 @@ func getControllerMoveset2(desiredPosition Pos, current State, robot *Robot) []S
 		}
 	}
 
-	// fmt.Println("DPAD2 Final States:")
-	// fmt.Println(finalStates)
+	for i, final := range finalStates {
+		backToA := getControllerMoveset1(A_DIR, final.dirPadState, robot.controller)
+		fmt.Println(backToA)
+		final.moveSet += backToA
+		finalStates[i] = final
+	}
 
 	return finalStates
 }
 
-func getDpadNeighbours(robot *Robot, dpadState DirPadState) []ScoredDirPadState {
+func getDpadNeighbours(robot *Robot, dpadState DirPadState, desiredPos Pos) []ScoredDirPadState {
 	neighbours := make([]ScoredDirPadState, 0)
 
 	// UP
-	if dpadState.keypad2.y > 0 {
+	if dpadState.keypad2.y > 0 && desiredPos.y > dpadState.keypad2.y {
 		upMoves := getControllerMoveset1(UP, dpadState, robot.controller)
 		nextState := DirPadState{keypad1: UP, keypad2: Pos{x: dpadState.keypad2.x, y: dpadState.keypad2.y - 1}}
 		upScoredState := ScoredDirPadState{moveSet: upMoves, dirPadState: nextState}
@@ -350,7 +379,8 @@ func getDpadNeighbours(robot *Robot, dpadState DirPadState) []ScoredDirPadState 
 	}
 
 	// DOWN
-	if dpadState.keypad2.y < len(robot.keypad)-1 && robot.keypad[dpadState.keypad2.y+1][dpadState.keypad2.x] != -1 {
+	if dpadState.keypad2.y < len(robot.keypad)-1 && robot.keypad[dpadState.keypad2.y+1][dpadState.keypad2.x] != -1 &&
+		desiredPos.y > dpadState.keypad2.y {
 		downMoves := getControllerMoveset1(DOWN, dpadState, robot.controller)
 		nextState := DirPadState{keypad1: DOWN, keypad2: Pos{x: dpadState.keypad2.x, y: dpadState.keypad2.y + 1}}
 		downScoredState := ScoredDirPadState{moveSet: downMoves, dirPadState: nextState}
@@ -358,7 +388,8 @@ func getDpadNeighbours(robot *Robot, dpadState DirPadState) []ScoredDirPadState 
 	}
 
 	// LEFT
-	if dpadState.keypad2.x > 0 && robot.keypad[dpadState.keypad2.y][dpadState.keypad2.x-1] != -1 {
+	if dpadState.keypad2.x > 0 && robot.keypad[dpadState.keypad2.y][dpadState.keypad2.x-1] != -1 &&
+		dpadState.keypad2.x > desiredPos.x {
 		leftMoves := getControllerMoveset1(LEFT, dpadState, robot.controller)
 		nextState := DirPadState{keypad1: LEFT, keypad2: Pos{x: dpadState.keypad2.x - 1, y: dpadState.keypad2.y}}
 		leftScoredState := ScoredDirPadState{moveSet: leftMoves, dirPadState: nextState}
@@ -366,7 +397,7 @@ func getDpadNeighbours(robot *Robot, dpadState DirPadState) []ScoredDirPadState 
 	}
 
 	// RIGHT
-	if dpadState.keypad2.x < len(robot.keypad[0])-1 {
+	if dpadState.keypad2.x < len(robot.keypad[0])-1 && dpadState.keypad2.x < desiredPos.x {
 		rightMoves := getControllerMoveset1(RIGHT, dpadState, robot.controller)
 		nextState := DirPadState{keypad1: RIGHT, keypad2: Pos{x: dpadState.keypad2.x + 1, y: dpadState.keypad2.y}}
 		rightScoredState := ScoredDirPadState{moveSet: rightMoves, dirPadState: nextState}
