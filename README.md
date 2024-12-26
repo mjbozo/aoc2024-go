@@ -130,7 +130,14 @@ Part 1: ⭐ (2.398968ms)
 
 Part 2: ⭐ (5.870412ms)
 
+
 ### Day 20
 Part 1: ⭐ (6.943424ms)
 
 Part 2: ⭐ (76.24764ms)
+
+
+### Day 21
+Part 1: ⭐ (164.121µs)
+
+Part 2: We'll come back for him

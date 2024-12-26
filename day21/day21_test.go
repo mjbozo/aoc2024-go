@@ -25,10 +25,9 @@ func TestPart2(t *testing.T) {
 		log.Fatalln(utils.Red(err.Error()))
 	}
 
-	expected := 0
+	expected := 126384
 	result := part2(input)
 	if result != expected {
 		t.Fatalf(utils.Red("Expected %d, got %d\n"), expected, result)
 	}
 }
-
