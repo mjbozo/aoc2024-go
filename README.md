@@ -147,3 +147,9 @@ Part 2: We'll come back for him
 Part 1: ⭐ (42.50946ms)
 
 Part 2: ⭐ (2.0133s)
+
+
+### Day 23
+Part 1: ⭐ (2.672041ms)
+
+Part 2: ⭐ (532.45317ms)
