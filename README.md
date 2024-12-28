@@ -138,9 +138,9 @@ Part 2: ⭐ (76.24764ms)
 
 
 ### Day 21
-Part 1: ⭐ (164.121µs)
+Part 1: ⭐ (69.139µs)
 
-Part 2: We'll come back for him
+Part 2: ⭐ (1.623848ms)
 
 
 ### Day 22

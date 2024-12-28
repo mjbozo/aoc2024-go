@@ -31,8 +31,6 @@ var (
 	RIGHT   = Pos{x: 2, y: 1}
 )
 
-var cacheHits int
-
 type Pos struct {
 	x int
 	y int
@@ -43,7 +41,6 @@ type Robot struct {
 	idx             int
 	pos             Pos
 	controller      *Robot
-	controlling     *Robot
 	prevRobotStates RobotChainState
 	memo            map[utils.Pair[Pos, RobotChainState]]utils.Pair[int, RobotChainState]
 }
@@ -67,7 +64,6 @@ func Run() {
 	part2Result := part2(input)
 	elapsed = time.Since(start)
 	fmt.Printf("Part 2: %d (%v)\n", part2Result, elapsed)
-	fmt.Println("Cache Hits:", cacheHits)
 }
 
 func part1(lines []string) int {
@@ -79,19 +75,16 @@ func part1(lines []string) int {
 		newRobot := Robot{
 			idx:             i,
 			pos:             A_DIR,
-			prevRobotStates: 0,
+			prevRobotStates: RobotChainState(dpadIndex(A_DIR)),
 			memo:            make(map[utils.Pair[Pos, RobotChainState]]utils.Pair[int, RobotChainState]),
 		}
 
 		if i > 0 {
 			newRobot.controller = &dpadRobots[i-1]
+			newRobot.prevRobotStates = dpadRobots[i-1].prevRobotStates + getState(newRobot)
 		}
 
 		dpadRobots = append(dpadRobots, newRobot)
-	}
-
-	for i := range numBots - 1 {
-		dpadRobots[i].controlling = &dpadRobots[i+1]
 	}
 
 	doorRobot := Robot{
@@ -111,7 +104,6 @@ func part1(lines []string) int {
 			movesetLength += passInstructionToDoorRobot(&doorRobot, x)
 		}
 
-		// fmt.Printf("MOVES FOR %s: %s (Len = %d, Num = %d)\n", line, moveset, len(moveset), numeric)
 		total += numeric * movesetLength
 	}
 
@@ -119,7 +111,6 @@ func part1(lines []string) int {
 }
 
 func part2(lines []string) int {
-	// right now i am NOT fucking around with a more generic solution. here are 25 hardcoded robots
 	// notable property that after each iteration, robots will all be returned to starting positions
 	dpadRobots := make([]Robot, 0)
 	numBots := 25
@@ -134,20 +125,11 @@ func part2(lines []string) int {
 
 		if i > 0 {
 			newRobot.controller = &dpadRobots[i-1]
-			dpadRobots[i-1].controlling = &newRobot
 			newRobot.prevRobotStates = dpadRobots[i-1].prevRobotStates + getState(newRobot)
 		}
 
 		dpadRobots = append(dpadRobots, newRobot)
 	}
-
-	// for i := range numBots - 1 {
-	// dpadRobots[i].controlling = &dpadRobots[i+1]
-	// }
-
-	// for _, robot := range dpadRobots {
-	// 	fmt.Println(robot)
-	// }
 
 	doorRobot := Robot{
 		idx:             numBots,
@@ -157,36 +139,20 @@ func part2(lines []string) int {
 		memo:            make(map[utils.Pair[Pos, RobotChainState]]utils.Pair[int, RobotChainState]),
 	}
 
-	// current := &doorRobot
-	// for current != nil {
-	// 	fmt.Println(current)
-	// 	current = current.controller
-	// }
-	// fmt.Println("did it work?")
-
 	total := 0
-	// lines = []string{"980A"}
 	for _, line := range lines {
 		var movesetLength int
 		numeric, _ := strconv.Atoi(line[:len(line)-1])
 
 		// for each number, figure out moves to get there
 		for _, x := range line {
-			fmt.Printf("Pressing %c\n", x)
 			movesetLength += passInstructionToDoorRobot(&doorRobot, x)
 		}
-		fmt.Printf("Completed %s\n", line)
 
-		// fmt.Printf("MOVES FOR %s: %s (Len = %d, Num = %d)\n", line, moveset, len(moveset), numeric)
-		// fmt.Printf("RESULT FOR %s: (Len = %d, Num = %d)\n", line, len(moveset), numeric)
 		total += numeric * movesetLength
 	}
 
 	return total
-	// 246093193889489 too high
-	// 233671216663500 wrong (too high I think)
-	// 24000478058
-	//  93275311411272 too low
 }
 
 func passInstructionToDoorRobot(doorRobot *Robot, x rune) int {
@@ -221,6 +187,7 @@ func passInstructionToDoorRobot(doorRobot *Robot, x rune) int {
 
 	// need to compare vertical first and horizontal first
 	// but also need to check if either will run into the gap
+	// weird pointer shit needed here to prevent overwriting data behind memory addresses
 	horizontalFirstController := &Robot{}
 	verticalFirstController := &Robot{}
 	*horizontalFirstController = *doorRobot.controller
@@ -233,6 +200,8 @@ func passInstructionToDoorRobot(doorRobot *Robot, x rune) int {
 		hThenV = append(hThenV, horizontalMoves...)
 		hThenV = append(hThenV, verticalMoves...)
 		horizontalFirstMovesetLength, _ = generateMoveset(hThenV, horizontalFirstController)
+		aMovesLength, _ := generateMoveset([]Pos{A_DIR}, horizontalFirstController)
+		horizontalFirstMovesetLength += aMovesLength
 	}
 
 	var verticalFirstMovesetLength int
@@ -242,6 +211,8 @@ func passInstructionToDoorRobot(doorRobot *Robot, x rune) int {
 		vThenH = append(vThenH, verticalMoves...)
 		vThenH = append(vThenH, horizontalMoves...)
 		verticalFirstMovesetLength, _ = generateMoveset(vThenH, verticalFirstController)
+		aMovesLength, _ := generateMoveset([]Pos{A_DIR}, verticalFirstController)
+		verticalFirstMovesetLength += aMovesLength
 	}
 
 	// set moveset accordingly
@@ -262,34 +233,8 @@ func passInstructionToDoorRobot(doorRobot *Robot, x rune) int {
 	}
 
 	doorRobot.pos = c
+	doorRobot.prevRobotStates += getState(*doorRobot)
 
-	aMovesLength, _ := generateMoveset([]Pos{A_DIR}, doorRobot.controller)
-	movesetLength += aMovesLength
-
-	currentRobot := doorRobot.controller
-	controllerRobots := make([]*Robot, 0)
-	for currentRobot != nil {
-		controllerRobots = append(controllerRobots, currentRobot)
-		currentRobot = currentRobot.controller
-	}
-
-	for i := len(controllerRobots) - 1; i >= 0; i-- {
-		controllerRobots[i].pos = A_DIR
-		if i == len(controllerRobots)-1 {
-			controllerRobots[i].prevRobotStates = getState(*controllerRobots[i])
-		} else {
-			controllerRobots[i].prevRobotStates = controllerRobots[i+1].prevRobotStates + getState(*controllerRobots[i])
-		}
-	}
-
-	var controllerState RobotChainState
-	if doorRobot.controller != nil {
-		controllerState = doorRobot.controller.prevRobotStates
-	}
-	doorRobot.prevRobotStates = getState(*doorRobot) + controllerState
-
-	// fmt.Println("Door robot updated: new pos:", doorRobot.pos)
-	// fmt.Println("Returning moves:", moveset)
 	return movesetLength
 }
 
@@ -299,28 +244,18 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 		return len(getHumanInput(desiredMoves)), 0
 	}
 
-	// fmt.Printf("Moves: %v\n", desiredMoves)
-	// fmt.Printf("Robot #%d\n", robot.idx)
-	// fmt.Println("State:", getState(*robot))
-	// fmt.Println("State Chain Value:", robot.prevRobotStates)
-	// fmt.Println("Pos:", robot.pos)
-	// fmt.Println("Memo:", robot.memo)
-	// fmt.Scanln()
-
 	var movesetLength int
 
 	// move is the button THIS ROBOT wants to press
 	for _, move := range desiredMoves {
 		robotOriginalState := robot.prevRobotStates
-		// fmt.Printf("Doing move %v with robot %v\n", move, robot)
 		if existingResult, ok := robot.memo[utils.Pair[Pos, RobotChainState]{First: move, Second: robot.prevRobotStates}]; ok {
 			// seen this exact move and state before
-			// fmt.Println(utils.Green("Retrieving value from cache"))
-			cacheHits++
 			movesetLength += existingResult.First
 
-			// need to update all the robot states still
 			robot.pos = move
+
+			// need to update all the robot states still
 			currentRobot := robot.controller
 			controllerRobots := make([]*Robot, 0)
 			for currentRobot != nil {
@@ -329,7 +264,6 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 			}
 
 			for i := len(controllerRobots) - 1; i >= 0; i-- {
-				controllerRobots[i].pos = A_DIR
 				if i == len(controllerRobots)-1 {
 					controllerRobots[i].prevRobotStates = getState(*controllerRobots[i])
 				} else {
@@ -342,13 +276,6 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 				controllerState = robot.controller.prevRobotStates
 			}
 			robot.prevRobotStates = getState(*robot) + controllerState
-
-			stateDiff := robotOriginalState - robot.prevRobotStates
-			currentRobot = robot.controlling
-			for currentRobot != nil {
-				currentRobot.prevRobotStates -= stateDiff
-				currentRobot = currentRobot.controlling
-			}
 
 			continue
 		}
@@ -380,6 +307,7 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 
 		// need to compare vertical first and horizontal first
 		// but also need to check if either will run into the gap
+		// weird pointer shit needed here to prevent overwriting data behind memory addresses
 		horizontalFirstController := &Robot{}
 		verticalFirstController := &Robot{}
 		if robot.controller != nil {
@@ -392,12 +320,15 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 
 		var horizontalFirstMovesetLength int
 		var horizontalFirstNewState RobotChainState
+		var aMovesLength int
 		horizontalHitsGap := robot.pos.y == GAP_DIR.y && robot.pos.x+xDiff == GAP_DIR.x
 		if !horizontalHitsGap {
 			hThenV := make([]Pos, 0, len(horizontalMoves)+len(verticalMoves))
 			hThenV = append(hThenV, horizontalMoves...)
 			hThenV = append(hThenV, verticalMoves...)
-			horizontalFirstMovesetLength, horizontalFirstNewState = generateMoveset(hThenV, horizontalFirstController) //, robot.prevRobotStates-getState(*robot))
+			horizontalFirstMovesetLength, horizontalFirstNewState = generateMoveset(hThenV, horizontalFirstController)
+			aMovesLength, horizontalFirstNewState = generateMoveset([]Pos{A_DIR}, horizontalFirstController)
+			horizontalFirstMovesetLength += aMovesLength
 		}
 
 		var verticalFirstMovesetLength int
@@ -407,7 +338,9 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 			vThenH := make([]Pos, 0, len(verticalMoves)+len(horizontalMoves))
 			vThenH = append(vThenH, verticalMoves...)
 			vThenH = append(vThenH, horizontalMoves...)
-			verticalFirstMovesetLength, verticalFirstNewState = generateMoveset(vThenH, verticalFirstController) //, robot.prevRobotStates-getState(*robot))
+			verticalFirstMovesetLength, verticalFirstNewState = generateMoveset(vThenH, verticalFirstController)
+			aMovesLength, verticalFirstNewState = generateMoveset([]Pos{A_DIR}, verticalFirstController)
+			verticalFirstMovesetLength += aMovesLength
 		}
 
 		// set moveset accordingly
@@ -433,41 +366,9 @@ func generateMoveset(desiredMoves []Pos, robot *Robot) (int, RobotChainState) {
 		}
 
 		robot.pos = move
-		aMovesLength, _ := generateMoveset([]Pos{A_DIR}, robot.controller) //, robot.prevRobotStates)
-		newMovesLength += aMovesLength
+		robot.prevRobotStates += getState(*robot)
 
-		// forcefully put all child robots on A
-		currentRobot := robot.controller
-		controllerRobots := make([]*Robot, 0)
-		for currentRobot != nil {
-			controllerRobots = append(controllerRobots, currentRobot)
-			currentRobot = currentRobot.controller
-		}
-
-		for i := len(controllerRobots) - 1; i >= 0; i-- {
-			controllerRobots[i].pos = A_DIR
-			if i == len(controllerRobots)-1 {
-				controllerRobots[i].prevRobotStates = getState(*controllerRobots[i])
-			} else {
-				controllerRobots[i].prevRobotStates = controllerRobots[i+1].prevRobotStates + getState(*controllerRobots[i])
-			}
-		}
-
-		var controllerState RobotChainState
-		if robot.controller != nil {
-			controllerState = robot.controller.prevRobotStates
-		}
-		robot.prevRobotStates = getState(*robot) + controllerState
-
-		stateDiff := robotOriginalState - robot.prevRobotStates
-
-		// think i need to update all the downsteam robots states now
-		currentRobot = robot.controlling
-		for currentRobot != nil {
-			currentRobot.prevRobotStates -= stateDiff
-			currentRobot = currentRobot.controlling
-		}
-
+		// memoise the state for later
 		memoKey := utils.Pair[Pos, RobotChainState]{First: move, Second: robotOriginalState}
 		memoValue := utils.Pair[int, RobotChainState]{First: newMovesLength, Second: robot.prevRobotStates}
 		robot.memo[memoKey] = memoValue
