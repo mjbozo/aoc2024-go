@@ -25,9 +25,7 @@ import (
 	"aoc2024/day22"
 	"aoc2024/day23"
 	"aoc2024/day24"
-	/*
-		"aoc2024/day25"
-	*/
+	"aoc2024/day25"
 	"aoc2024/daybreaker"
 	"aoc2024/utils"
 	"fmt"
@@ -118,10 +116,8 @@ func main() {
 		day23.Run()
 	case "day24":
 		day24.Run()
-		/*
-		   case "day25":
-		       day25.Run()
-		*/
+	case "day25":
+		day25.Run()
 	default:
 		fmt.Printf("%s not completed yet\n", day)
 	}
@@ -170,14 +166,12 @@ func runAll() {
 	day20.Run()
 	fmt.Println("\nDAY 21")
 	day21.Run()
-	/*
-	   fmt.Println("\nDAY 22")
-	   day22.Run()
-	   fmt.Println("\nDAY 23")
-	   day23.Run()
-	   fmt.Println("\nDAY 24")
-	   day24.Run()
-	   fmt.Println("\nDAY 25")
-	   day25.Run()
-	*/
+	fmt.Println("\nDAY 22")
+	day22.Run()
+	fmt.Println("\nDAY 23")
+	day23.Run()
+	fmt.Println("\nDAY 24")
+	day24.Run()
+	fmt.Println("\nDAY 25")
+	day25.Run()
 }
